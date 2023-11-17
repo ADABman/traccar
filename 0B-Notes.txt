@@ -1,0 +1,4 @@
+Install gradle + default-jdk
+./gradlew assemble
+
+
