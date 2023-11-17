@@ -1,4 +1,4 @@
 Install gradle + default-jdk
 ./gradlew assemble
 
-
+gradle leaves a running process after using, kill it killall java
