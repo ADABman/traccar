@@ -24,11 +24,11 @@ import com.google.firebase.messaging.AndroidNotification;
 import com.google.firebase.messaging.ApnsConfig;
 import com.google.firebase.messaging.Aps;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.MulticastMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.traccar.model.ObjectOperation;
 import org.traccar.config.Config;
 import org.traccar.config.Keys;
 import org.traccar.model.Event;
@@ -39,7 +39,6 @@ import org.traccar.notification.MessageException;
 import org.traccar.notification.NotificationFormatter;
 import org.traccar.session.cache.CacheManager;
 import org.traccar.storage.Storage;
-import org.traccar.storage.StorageException;
 import org.traccar.storage.query.Columns;
 import org.traccar.storage.query.Condition;
 import org.traccar.storage.query.Request;
@@ -86,7 +85,7 @@ public class NotificatorFirebase implements Notificator {
     public void send(Notification notification, User user, Event event, Position position) throws MessageException {
         if (user.hasAttribute("notificationTokens")) {
 
-            var shortMessage = notificationFormatter.formatMessage(user, event, position, "short");
+            var shortMessage = notificationFormatter.formatMessage(notification, user, event, position, "short");
 
             List<String> registrationTokens = new ArrayList<>(
                     Arrays.asList(user.getString("notificationTokens").split("[, ]")));
@@ -135,9 +134,9 @@ public class NotificatorFirebase implements Notificator {
                     storage.updateObject(user, new Request(
                             new Columns.Include("attributes"),
                             new Condition.Equals("id", user.getId())));
-                    cacheManager.updateOrInvalidate(true, user);
+                    cacheManager.invalidateObject(true, User.class, user.getId(), ObjectOperation.UPDATE);
                 }
-            } catch (FirebaseMessagingException | StorageException e) {
+            } catch (Exception e) {
                 LOGGER.warn("Firebase error", e);
             }
         }
